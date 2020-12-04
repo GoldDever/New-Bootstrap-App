@@ -1,0 +1,80 @@
+package com.example.MySecondSpringBoot.controller;
+
+import com.example.MySecondSpringBoot.model.User;
+import com.example.MySecondSpringBoot.service.RoleService;
+import com.example.MySecondSpringBoot.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+@Controller
+
+public class MyController {
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private RoleService roleService;
+
+    @GetMapping(value = "/")
+    public String firstPage(Model model) {
+        return "firstView";
+    }
+
+    @GetMapping(value = "/allUsers")
+    public String showAllUsers(Model model) {
+        model.addAttribute("usersAll", userService.findAll());
+        return "allUsers";
+    }
+
+    @GetMapping(value = "/{id}")
+    public String showOneUser(@PathVariable("id") long id, Model model) {
+        model.addAttribute("userByid", userService.findById(id));
+        return "getUserById";
+    }
+
+    @GetMapping(value = "/addUser")
+    public String giveNewUser(Model model) {
+        model.addAttribute("newUser", new User());
+        model.addAttribute("allRoles", roleService.getAll());
+        return "newuser";
+    }
+
+    @PostMapping()
+    public String saveNewUser(@ModelAttribute("user") User user) {
+        userService.save(user);
+        return "redirect:/allUsers";
+    }
+
+    @GetMapping("/{id}/admin")
+    public String editUser(@PathVariable("id") long id, Model model) {
+        User user1 = userService.findById(id);
+        model.addAttribute("user", user1);
+        model.addAttribute("allRoles", roleService.getAll());
+        return "edit";
+    }
+
+    @PostMapping("/{id}")
+    public String update(@ModelAttribute("user") User user,
+                         @PathVariable("id") long id ) {
+        userService.update(id, user);
+        return "redirect:/allUsers";
+    }
+
+    @DeleteMapping("/{id}")
+    public String delete(@PathVariable("id") long id) {
+        userService.deleteById(id);
+        return "redirect:/allUsers";
+    }
+
+    @GetMapping("page/user")
+    public String showOverview(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) auth.getPrincipal();
+        model.addAttribute("userGotIn", user);
+        return "user";
+    }
+}
+
