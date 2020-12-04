@@ -45,28 +45,30 @@ public class MyController {
     @PostMapping()
     public String saveNewUser(@ModelAttribute("user") User user) {
         userService.save(user);
-        return "redirect:/allUsers";
+        return "redirect:/admin";
     }
 
-    @GetMapping("/{id}/admin")
-    public String editUser(@PathVariable("id") long id, Model model) {
-        User user1 = userService.findById(id);
-        model.addAttribute("user", user1);
-        model.addAttribute("allRoles", roleService.getAll());
-        return "edit";
+    @GetMapping("/admin")
+    public String editUser(Model model) {
+       Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+       User user = (User) auth.getPrincipal();
+       model.addAttribute("userGotIn", user);
+       model.addAttribute("users", userService.findAll());
+       model.addAttribute("allRoles", roleService.getAll());
+       return "bootstrapAdmin";
     }
 
     @PostMapping("/{id}")
     public String update(@ModelAttribute("user") User user,
                          @PathVariable("id") long id ) {
         userService.update(id, user);
-        return "redirect:/allUsers";
+        return "redirect:/admin";
     }
 
     @DeleteMapping("/{id}")
     public String delete(@PathVariable("id") long id) {
         userService.deleteById(id);
-        return "redirect:/allUsers";
+        return "redirect:/admin";
     }
 
     @GetMapping("page/user")
